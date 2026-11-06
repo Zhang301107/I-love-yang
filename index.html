@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="referrer" content="no-referrer">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html,body {
@@ -264,9 +265,9 @@
 <body>
 <div id="photoLayer"></div>
 <div class="stage" id="stage">
-  <div id="lidongText">冬至快乐 ❉</div>
+  <div id="lidongText">立冬快乐 ❉</div>
 </div>
-<div class="foot" id="footText">冬 · 至 · 快 · 乐</div>
+<div class="foot" id="footText">立 · 冬 · 快 · 乐</div>
 <div class="laugh" id="laughText">亚漫，我喜欢你</div>
 <script>
 const stage = document.getElementById('stage');
@@ -278,10 +279,10 @@ const laughText = document.getElementById('laughText');
 const PHOTO_COUNT   = 30;
 const STAY_MS       = 3000;
 const GAP_MS        = 1000;
-const STOP_PHOTO_MS = 19000;    // 19s停止出新照片
-const GATHER_DELAY  = 22000;    // 22s汇聚放大爱心
-const LIDONG_HIDE_MS = 21000;   // 21s 冬至快乐消失
-const LAUGH_AT_MS   = 24000;    // 24s 亚漫，我喜欢你出现
+const STOP_PHOTO_MS = 19000;
+const GATHER_AT_MS  = 22000;
+const LIDONG_HIDE_MS = 21000;
+const LAUGH_AT_MS   = 24000;
 const LAUGH_KEEP_MS = 10000;
 const ROUND_TOTAL   = 34000;
 
@@ -549,9 +550,9 @@ function runOneRound(){
       roundSetTimeout(()=>{
         runOneRound();
       },LAUGH_KEEP_MS);
-    }, LAUGH_AT_MS - GATHER_DELAY);
+    }, LAUGH_AT_MS - GATHER_AT_MS);
 
-  }, GATHER_DELAY);
+  }, GATHER_AT_MS);
 }
 
 runOneRound();
