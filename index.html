@@ -203,7 +203,7 @@ const base = Math.min(W,H)/60;
 
 function makeHeart(px,py,size,delay){
   const s = document.createElement('span');
-  s.className='p'; s.textContent = Math.random()>0.85 ? '\u2749' : '\u2764';
+  s.className='p'; s.textContent = '\u2661';
   s.style.left = px+'px';
   s.style.top  = py+'px';
   s.style.fontSize = size+'px';
@@ -217,7 +217,7 @@ for(let ring=0; ring<2; ring++){
   for(let t=0; t<Math.PI*2; t+=0.06){
     const [x,y]=heartXY(t,s);
     const d = Math.sqrt(x*x+y*y)/(base*18);
-    stage.appendChild(makeHeart(CX+x, CY+y, 9+Math.random()*7, (d*1.8 + ring*0.45).toFixed(2)));
+    stage.appendChild(makeHeart(CX+x, CY+y, 11+Math.random()*7, (d*1.8 + ring*0.45).toFixed(2)));
   }
 }
 
@@ -247,8 +247,8 @@ function addFlow(s, n, dir, cool, period){
   for(let i=0;i<n;i++){
     const el = document.createElement('span');
     el.className = 'flowp' + (cool ? ' cool' : '');
-    el.textContent = cool ? '\u2749' : '\u2764';
-    el.style.fontSize = (10+Math.random()*7).toFixed(1)+'px';
+    el.textContent = '\u2661';
+    el.style.fontSize = (12+Math.random()*8).toFixed(1)+'px';
     el.style.animationDelay = (Math.random()*2.2).toFixed(2)+'s';
     stage.appendChild(el);
     flowItems.push({el:el, s:s, t:(i/n)*Math.PI*2, dir:dir, period:period});
