@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -48,6 +51,7 @@
 
   /* 轮廓流光线粒子：位置固定，亮/暗由 JS 流光扫掠控制 */
   .p { position:absolute; color:#ff69b4; pointer-events:none;
+       text-shadow:0 0 6px rgba(255,140,200,.55),0 0 14px rgba(255,105,180,.35);
        will-change:opacity,transform; }
 
   /* 内部填充粒子：保留原地呼吸缩放 */
@@ -121,6 +125,21 @@
     36% { transform: translate(-50%,-50%) scale(1.04) rotate(0deg); }
     50% { transform: translate(-50%,-50%) scale(1) rotate(0deg); }
   }
+
+  /* ===== 背景音乐按钮 ===== */
+  #musicTip {
+    position:fixed; top:18px; right:18px; z-index:1000;
+    padding:10px 18px; border-radius:24px;
+    background:rgba(255,105,180,.16); color:#ffc2de;
+    border:1px solid rgba(255,127,192,.6);
+    font-size:14px; letter-spacing:1px; cursor:pointer;
+    backdrop-filter:blur(4px);
+    box-shadow:0 0 16px rgba(255,105,180,.5);
+    display:none; align-items:center; gap:6px; white-space:nowrap;
+    animation:glow 1.4s infinite ease-in-out;
+  }
+
+  @supports not (backdrop-filter:blur(1px)) { #musicTip { background:rgba(40,10,25,.85); } }
 </style>
 </head>
 <body>
@@ -132,6 +151,7 @@
 </div>
 <div class="foot" id="footText">立 · 冬 · 快 · 乐</div>
 <div id="finalText">吃饭了没</div>
+<div id="musicTip">&#9834; 点击播放背景音乐</div>
 
 <script>
 const stage = document.getElementById('stage');
@@ -159,8 +179,11 @@ function heartXY(t, s){
   const y = -(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
   return [x*s, y*s];
 }
-const W = stage.clientWidth, H = stage.clientHeight;
+const W = stage.clientWidth || window.innerWidth, H = stage.clientHeight || window.innerHeight;
 const base = Math.min(W,H)/40;
+const isMobile = /Android|iPhone|iPad|iPod|Mobile|MicroMessenger|QQ\//i.test(navigator.userAgent) || Math.min(W,H) < 480;
+const RING_STEP = isMobile ? 0.09 : 0.05;                       // 移动端轮廓粒子间距加大，数量约减半
+const COMETS_N  = isMobile ? Math.min(6, FLOW_COMETS) : FLOW_COMETS;  // 移动端每方向光线减少
 
 const ringDots = [];   // 轮廓流光线粒子
 
@@ -187,7 +210,7 @@ function addFillDot(x,y,size,delay){
 /* 轮廓三圈（内/中/外）：位置固定，参与流光扫掠 */
 for(let ring=0; ring<3; ring++){
   const s = base*(1+ring*0.09);
-  const step = 0.05;
+  const step = RING_STEP;
   for(let t=0; t<Math.PI*2; t+=step){
     const [x,y]=heartXY(t,s);
     addRingDot(x,y, 10+Math.random()*8, (t/(Math.PI*2)));
@@ -204,22 +227,25 @@ for(let i=0;i<90;i++){
 /* 流光：顺 + 逆双向，每个方向各 FLOW_COMETS 条彗星高光（近白光头 + 粉色拖尾）
    同方向的多条光线之间间隔 FLOW_STAGGER 秒错峰出发 */
 const flowT0 = performance.now();
+const FLOW_FPS = 30;            // 移动端帧率节流：60fps 在手机上难维持，30fps 更稳更省电
+let flowLast = 0;
 function flowLoop(now){
+  requestAnimationFrame(flowLoop);
+  if(now - flowLast < 1000/FLOW_FPS) return;   // 节流：跳过多于的帧
+  flowLast = now;
   // 光头沿轮廓的连续相位（不归一，便于做错峰偏移）
   const basePhase = ((now - flowT0)/1000) / FLOW_PERIOD;
   const phaseGap  = FLOW_STAGGER / FLOW_PERIOD;   // 同方向相邻两条光线的相位差
   for(const d of ringDots){
     let I = 0;
-    for(let k=0; k<FLOW_COMETS; k++){
+    for(let k=0; k<COMETS_N; k++){
       const ph = basePhase - k*phaseGap;          // 第 k 条光线相对第一条错峰出发
-      // 顺时针：back 越大表示光头已扫过越久（拖尾）
-      let bCW = (ph - d.arcPos) % 1; if(bCW < 0) bCW += 1;
+      let bCW = (ph - d.arcPos) % 1; if(bCW < 0) bCW += 1;   // 顺时针拖尾
       if(bCW <= FLOW_TRAIL){
         const i = Math.pow(1 - bCW/FLOW_TRAIL, 1.7);
         if(i > I) I = i;
       }
-      // 逆时针：拖尾方向相反
-      let bCCW = (d.arcPos - ph) % 1; if(bCCW < 0) bCCW += 1;
+      let bCCW = (d.arcPos - ph) % 1; if(bCCW < 0) bCCW += 1; // 逆时针拖尾
       if(bCCW <= FLOW_TRAIL){
         const i = Math.pow(1 - bCCW/FLOW_TRAIL, 1.7);
         if(i > I) I = i;
@@ -228,16 +254,11 @@ function flowLoop(now){
     const base = 0.34;                       // 未被扫过的轮廓：暗粉常亮
     d.el.style.opacity = (base + (1-base)*I).toFixed(3);
     d.el.style.transform = 'scale(' + (0.80 + 0.55*I).toFixed(3) + ')';
-    // 颜色：底色粉 -> 光头近白
+    // 颜色：底色粉 -> 光头近白（只改 color；辉光固定由 CSS 给，不再每帧改 text-shadow）
     const g = Math.round(105 + 150*I);
     const b = Math.round(180 + 75*I);
     d.el.style.color = 'rgb(255,' + g + ',' + b + ')';
-    // 辉光：光头为白核 + 粉晕，越亮辉光越强
-    d.el.style.textShadow =
-      '0 0 ' + (5+20*I).toFixed(1) + 'px rgba(255,' + g + ',' + b + ',' + (0.55+0.45*I).toFixed(2) + '),' +
-      '0 0 ' + (10+34*I).toFixed(1) + 'px rgba(255,' + Math.round(150+60*I) + ',' + Math.round(205+40*I) + ',' + (0.35+0.45*I).toFixed(2) + ')';
   }
-  requestAnimationFrame(flowLoop);
 }
 requestAnimationFrame(flowLoop);
 
@@ -306,6 +327,22 @@ function spawnPhoto(){
   setTimeout(spawnPhoto, SPAWN_INTERVAL + Math.random()*35);
 }
 spawnPhoto();
+
+/* ===== 背景音乐 ===== */
+const BGM_FILE = "music.mp3";      // 把音乐文件命名为 music.mp3 放在本 html 同目录即可；也可改成你的文件名(支持 mp3 / m4a / ogg)
+const bgm = new Audio(BGM_FILE);
+bgm.loop = true;                    // 循环播放
+bgm.volume = 0.55;                  // 音量 0~1，可自行调大调小
+const musicTip = document.getElementById('musicTip');
+function startMusic(){
+  bgm.play().then(()=>{ if(musicTip) musicTip.style.display='none'; }).catch(()=>{});
+}
+// 页面加载即尝试自动播放；浏览器若拦截(多数浏览器会)，则显示右上角按钮，点一下即可播放
+bgm.play().then(()=>{ if(musicTip) musicTip.style.display='none'; })
+   .catch(()=>{ if(musicTip) musicTip.style.display='flex'; });
+if(musicTip){
+  musicTip.addEventListener('click', e=>{ e.stopPropagation(); startMusic(); musicTip.style.display='none'; });
+}
 
 /* ===== 汇聚成爱心（保持不变）===== */
 function gatherToHeart(){
