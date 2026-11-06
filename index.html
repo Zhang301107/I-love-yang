@@ -131,7 +131,7 @@
     36% { transform: scale(1.04); }
     50% { transform: scale(1); }
   }
-  /* ===== 哈哈哈：页面正中间，最上层 ===== */
+  /* ===== 亚漫，我喜欢你：页面正中间，最上层 ===== */
   .laugh {
     position:fixed;
     left:50%;
@@ -230,9 +230,10 @@ const lidongText = document.getElementById('lidongText');
 const laughText = document.getElementById('laughText');
 
 const PHOTO_COUNT   = 30;
-const STAY_MS       = 2000;
+const STAY_MS       = 3000;
 const GAP_MS        = 1000;
 const GATHER_DELAY  = 20000;
+const STOP_NEW_PHOTO_MS = 19000;
 const LIDONG_HIDE_MS = 21500;
 const LAUGH_AT_MS   = 22000;
 const LAUGH_KEEP_MS = 10000;
@@ -369,6 +370,9 @@ function nextPhotoIndex(){
 function spawnPhoto(){
   if(gathering) return;
 
+  const now = performance.now();
+  if(now >= STOP_NEW_PHOTO_MS) return;
+
   const idx = nextPhotoIndex();
   const src = PHOTOS[idx];
   const card = document.createElement('div');
@@ -418,7 +422,11 @@ function spawnPhoto(){
   }, STAY_MS + 1400);
 
   photoTimers.set(card, t1);
-  setTimeout(spawnPhoto, GAP_MS);
+
+  const nextIn = Math.min(GAP_MS, STOP_NEW_PHOTO_MS - now);
+  if(nextIn > 0){
+    setTimeout(spawnPhoto, nextIn);
+  }
 }
 
 spawnPhoto();
