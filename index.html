@@ -228,7 +228,7 @@
     width:0;
     height:0;
     pointer-events:none;
-    animation:riseGroup 3.2s linear forwards;
+    animation:riseGroup 2.2s linear forwards;
   }
   .snow-group .snow {
     position:absolute;
@@ -270,35 +270,20 @@ const PHOTO_COUNT   = 30;
 const STAY_MS       = 3000;
 const GAP_MS        = 1000;
 const GATHER_DELAY  = 20000;
-const STOP_NEW_PHOTO_MS = 19000;
 const SCALE_UP_MS   = 21500;
-const LIDONG_HIDE_MS = 21500;
-const LAUGH_AT_MS   = 22000;
+const LAUGH_DELAY_AFTER_SCALE = 500;
 const LAUGH_KEEP_MS = 10000;
 
 const PHOTOS = [];
 for(let i = 1; i <= PHOTO_COUNT; i++) PHOTOS.push(i + '.jpg');
-
-let timerList = [];
-function safeSetTimeout(fn,delay){
-  const t = setTimeout(fn,delay);
-  timerList.push(t);
-  return t;
-}
-function clearAllTimers(){
-  timerList.forEach(t=>clearTimeout(t));
-  timerList.length = 0;
-}
 
 function heartXY(t, s){
   const x = 16*Math.pow(Math.sin(t),3);
   const y = -(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
   return [x*s, y*s];
 }
-
 const W = stage.clientWidth, H = stage.clientHeight;
 const base = Math.min(W,H)/60;
-
 function makeHeart(px,py,size,delay){
   const s = document.createElement('span');
   s.className='p'; s.textContent = '\u2661';
@@ -308,7 +293,6 @@ function makeHeart(px,py,size,delay){
   s.style.animationDelay = delay+'s';
   return s;
 }
-
 const CX = W/2, CY = H*0.46;
 for(let ring=0; ring<2; ring++){
   const s = base*(1+ring*0.16);
@@ -318,7 +302,6 @@ for(let ring=0; ring<2; ring++){
     stage.appendChild(makeHeart(CX+x, CY+y, 11+Math.random()*7, (d*1.8 + ring*0.45).toFixed(2)));
   }
 }
-
 function heartPath(s){
   let p='';
   for(let t=0; t<=Math.PI*2+0.02; t+=0.04){
@@ -327,7 +310,6 @@ function heartPath(s){
   }
   return p + 'Z';
 }
-
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const halo = document.createElementNS(SVG_NS,'svg');
 halo.setAttribute('class','halo');
@@ -340,6 +322,9 @@ halo.innerHTML =
 stage.appendChild(halo);
 
 const flowItems = [];
+// 流动爱心数量 ×3，速度 ×1.3
+addFlow(base*1.42, 45,  1, false, 18000/1.3);
+addFlow(base*1.62, 45, -1, true , 24000/1.3);
 function addFlow(s, n, dir, cool, period){
   for(let i=0;i<n;i++){
     const el = document.createElement('span');
@@ -351,8 +336,6 @@ function addFlow(s, n, dir, cool, period){
     flowItems.push({el:el, s:s, t:(i/n)*Math.PI*2, dir:dir, period:period});
   }
 }
-addFlow(base*1.42, 15,  1, false, 18000);
-addFlow(base*1.62, 15, -1, true , 24000);
 
 let flowLast = performance.now();
 function flowTick(now){
@@ -367,6 +350,7 @@ function flowTick(now){
 }
 requestAnimationFrame(flowTick);
 
+// 雪花：数量×3，上浮速度×1.3（动画时长缩短）
 function spawnSnow(){
   const group = document.createElement('div');
   group.className = 'snow-group';
@@ -376,7 +360,8 @@ function spawnSnow(){
   group.style.left = x + 'px';
   group.style.top  = y + 'px';
   group.style.fontSize = size + 'px';
-  group.style.animationDuration = (2.0 + Math.random()*2.2) + 's';
+  // 原 2.0~4.2s → /1.3 提速0.3倍
+  group.style.animationDuration = ((2.0 + Math.random()*2.2)/1.3) + 's';
 
   const snow = document.createElement('span');
   snow.className = 'snow';
@@ -394,15 +379,25 @@ function spawnSnow(){
   group.appendChild(snow);
   group.appendChild(heart);
   document.body.appendChild(group);
-
-  safeSetTimeout(()=> group.remove(), 4800);
-  safeSetTimeout(spawnSnow, 60 + Math.random()*180);
+  setTimeout(() => group.remove(), 4800);
+  // 生成间隔缩短，出雪花频率×3
+  setTimeout(spawnSnow, 20 + Math.random()*60);
 }
 spawnSnow();
 
-// ----------------------单轮播放函数，一轮结束递归循环----------------------
+let roundTimerList = [];
+function roundSetTimeout(fn,delay){
+  const t = setTimeout(fn,delay);
+  roundTimerList.push(t);
+  return t;
+}
+function clearRoundTimers(){
+  roundTimerList.forEach(t=>clearTimeout(t));
+  roundTimerList.length = 0;
+}
+
 function runOneRound(){
-  clearAllTimers();
+  clearRoundTimers();
   photoLayer.querySelectorAll('.photo-card').forEach(c=>c.remove());
   lidongText.classList.remove('hide-me');
   footText.style.opacity = '1';
@@ -433,7 +428,6 @@ function runOneRound(){
 
     const basePhoto = Math.min(window.innerWidth*0.22,130);
     const size = Math.round((basePhoto + Math.random()*60) * 1.2);
-    const rot  = (Math.random()-0.5)*28;
     const x = Math.random()*(window.innerWidth - size - 16) + 8;
     const y = Math.random()*(window.innerHeight - size - 50) + 16;
 
@@ -448,38 +442,38 @@ function runOneRound(){
     shown.push(card);
 
     if(Math.random() < 0.3){
-      safeSetTimeout(()=>{
+      roundSetTimeout(()=>{
         if(card.parentNode && !card.classList.contains('zoom') && !gathering){
           card.classList.add('breath');
-          safeSetTimeout(()=> card.classList.remove('breath'), 1100);
+          roundSetTimeout(()=> card.classList.remove('breath'), 1100);
         }
       }, 400 + Math.random()*Math.max(200, STAY_MS - 1600));
     }
     if(Math.random() < 0.25){
-      safeSetTimeout(()=>{
+      roundSetTimeout(()=>{
         if(card.parentNode && !card.classList.contains('zoom') && !gathering){
           card.classList.add('big');
-          safeSetTimeout(()=>{
+          roundSetTimeout(()=>{
             if(card.parentNode) card.classList.remove('big');
           }, 4000);
         }
       }, 600 + Math.random()*800);
     }
 
-    safeSetTimeout(()=>{
+    roundSetTimeout(()=>{
       if(card.parentNode && !card.classList.contains('zoom') && !gathering){
         card.classList.add('fadeOut');
-        safeSetTimeout(()=>{
+        roundSetTimeout(()=>{
           if(card.parentNode) card.remove();
         },800);
       }
     }, STAY_MS);
 
-    safeSetTimeout(spawnPhoto, GAP_MS);
+    roundSetTimeout(spawnPhoto, GAP_MS);
   }
   spawnPhoto();
 
-  safeSetTimeout(()=>{
+  roundSetTimeout(()=>{
     gathering = true;
     footText.style.opacity = '0';
     photoLayer.querySelectorAll('.photo-card').forEach(c=>c.remove());
@@ -528,30 +522,25 @@ function runOneRound(){
       });
     });
 
-    safeSetTimeout(()=>{
-      cards.forEach(c=>{
-        c.classList.add('scale-up');
-        c.classList.add('fullscreen-heart');
-        c.classList.add('final-pulse');
+    roundSetTimeout(()=>{
+      lidongText.classList.add('hide-me');
+      document.querySelectorAll('.photo-card.gather').forEach(card=>{
+        card.classList.add('scale-up');
+        card.classList.add('fullscreen-heart');
+        card.classList.add('final-pulse');
       });
-    },1500);
+      roundSetTimeout(()=>{
+        laughText.classList.add('show');
+        roundSetTimeout(()=>{
+          runOneRound();
+        },LAUGH_KEEP_MS);
+      },LAUGH_DELAY_AFTER_SCALE);
+
+    }, SCALE_UP_MS - GATHER_DELAY);
 
   },GATHER_DELAY);
-
-  safeSetTimeout(()=>{
-    lidongText.classList.add('hide-me');
-  },LIDONG_HIDE_MS);
-
-  safeSetTimeout(()=>{
-    laughText.classList.add('show');
-    safeSetTimeout(()=>{
-      //本轮全部结束，立刻递归开启新一轮
-      runOneRound();
-    },LAUGH_KEEP_MS);
-  },LAUGH_AT_MS);
 }
 
-//启动第一轮
 runOneRound();
 
 </script>
