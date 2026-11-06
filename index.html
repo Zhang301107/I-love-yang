@@ -111,11 +111,10 @@
                 transform 1.0s ease;
   }
   .photo-card.gather img { border-radius:2px; }
-  /* 第20秒所有照片放大1倍 */
+  /* 第21.5秒所有照片放大1倍并铺满屏幕 */
   .photo-card.gather.scale-up {
     transform: scale(2) !important;
   }
-  /* 铺满屏幕 */
   .photo-card.gather.fullscreen-heart {
     width: 11vw !important;
     height: 11vw !important;
@@ -234,6 +233,7 @@ const STAY_MS       = 3000;
 const GAP_MS        = 1000;
 const GATHER_DELAY  = 20000;
 const STOP_NEW_PHOTO_MS = 19000;
+const SCALE_UP_MS   = 21500;
 const LIDONG_HIDE_MS = 21500;
 const LAUGH_AT_MS   = 22000;
 const LAUGH_KEEP_MS = 10000;
@@ -483,17 +483,17 @@ function gatherToHeart(){
       card.style.left = (tg.x - cardSize/2)+'px';
       card.style.top  = (tg.y - cardSize/2)+'px';
     });
-
-    setTimeout(()=>{
-      cards.forEach(c=>{
-        c.classList.add('scale-up');
-        c.classList.add('fullscreen-heart');
-        c.classList.add('final-pulse');
-      });
-    }, 1000);
   });
 }
 setTimeout(gatherToHeart, GATHER_DELAY);
+
+setTimeout(()=>{
+  document.querySelectorAll('.photo-card.gather').forEach(card=>{
+    card.classList.add('scale-up');
+    card.classList.add('fullscreen-heart');
+    card.classList.add('final-pulse');
+  });
+}, SCALE_UP_MS);
 
 setTimeout(()=>{
   lidongText.classList.add('hide-me');
