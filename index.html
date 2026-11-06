@@ -98,24 +98,27 @@
     box-shadow:0 0 40px rgba(255,105,180,.6);
   }
   .photo-card.zoom img { width:100%; height:auto; }
-  /* 汇聚成爱心时铺满整个屏幕 */
+  /* 汇聚时的照片样式 */
   .photo-card.gather {
     position:fixed !important;
     z-index:100 !important;
-    padding:2px !important;
-    box-shadow:0 0 10px rgba(255,105,180,.55) !important;
+    padding:3px !important;
+    box-shadow:0 0 12px rgba(255,105,180,.65) !important;
     cursor:default !important;
     animation:none !important; opacity:1 !important;
     transition: left 1.8s cubic-bezier(.5,0,.2,1), top 1.8s cubic-bezier(.5,0,.2,1),
-                width 1.2s ease, height 1.2s ease,
-                transform 1.2s ease;
+                width 1.0s ease, height 1.0s ease,
+                transform 1.0s ease;
   }
   .photo-card.gather img { border-radius:2px; }
-  /* 铺满屏幕后的放大效果 */
+  /* 第20秒所有照片放大1倍 */
+  .photo-card.gather.scale-up {
+    transform: scale(2) !important;
+  }
+  /* 铺满屏幕 */
   .photo-card.gather.fullscreen-heart {
     width: 11vw !important;
     height: 11vw !important;
-    transform: scale(1);
   }
   /* 最终爱心整体脉动 */
   .photo-card.gather.final-pulse {
@@ -229,7 +232,7 @@ const laughText = document.getElementById('laughText');
 const PHOTO_COUNT   = 30;
 const MAX_ON_SCREEN = 12;
 const MIN_ON_SCREEN  = 3;
-const STAY_MS       = 2000;
+const STAY_MS       = 3000;     // 20秒前单张照片停留3秒
 const GATHER_DELAY  = 20000;
 const LIDONG_HIDE_MS = 21500;
 const LAUGH_AT_MS   = 22000;
@@ -518,10 +521,11 @@ function gatherToHeart(){
 
     setTimeout(()=>{
       cards.forEach(c=>{
+        c.classList.add('scale-up');
         c.classList.add('fullscreen-heart');
         c.classList.add('final-pulse');
       });
-    }, 1900);
+    }, 1000);
   });
 }
 setTimeout(gatherToHeart, GATHER_DELAY);
