@@ -21,7 +21,7 @@
                 top 2.2s cubic-bezier(.4,0,.2,1),
                 transform 2.2s cubic-bezier(.4,0,.2,1),
                 opacity 0.35s ease,
-                width 2.2s ease, height 2.2s ease;
+                width 0.4s ease, height 0.4s ease;
   }
   .photo-card img {
     display:block; width:100%; height:100%; object-fit:cover;
@@ -41,6 +41,11 @@
   @keyframes breathe {
     0%,100% { transform:scale(1) rotate(var(--rot)); }
     50%     { transform:scale(1.18) rotate(var(--rot)); }
+  }
+  .photo-card.big {
+    transform: scale(1.2);
+    z-index: 50;
+    box-shadow:0 10px 30px rgba(255,105,180,.45);
   }
   .stage { position:relative; width:min(90vw,420px); height:min(90vw,420px);
            animation:beat 6.7s infinite ease-in-out; z-index:20; }
@@ -93,18 +98,25 @@
     box-shadow:0 0 40px rgba(255,105,180,.6);
   }
   .photo-card.zoom img { width:100%; height:auto; }
-  /* 汇聚时的照片样式 */
+  /* 汇聚成爱心时铺满整个屏幕 */
   .photo-card.gather {
     position:fixed !important;
     z-index:100 !important;
-    padding:3px !important;
-    box-shadow:0 0 12px rgba(255,105,180,.65) !important;
+    padding:2px !important;
+    box-shadow:0 0 10px rgba(255,105,180,.55) !important;
     cursor:default !important;
     animation:none !important; opacity:1 !important;
     transition: left 1.8s cubic-bezier(.5,0,.2,1), top 1.8s cubic-bezier(.5,0,.2,1),
-                width 1.0s ease, height 1.0s ease;
+                width 1.2s ease, height 1.2s ease,
+                transform 1.2s ease;
   }
-  .photo-card.gather img { border-radius:50%; }
+  .photo-card.gather img { border-radius:2px; }
+  /* 铺满屏幕后的放大效果 */
+  .photo-card.gather.fullscreen-heart {
+    width: 11vw !important;
+    height: 11vw !important;
+    transform: scale(1);
+  }
   /* 最终爱心整体脉动 */
   .photo-card.gather.final-pulse {
     animation: finalBeat 6.7s infinite ease-in-out !important;
@@ -216,11 +228,13 @@ const laughText = document.getElementById('laughText');
 
 const PHOTO_COUNT   = 30;
 const MAX_ON_SCREEN = 12;
-const STAY_MS       = 2300;
-const GATHER_DELAY  = 20000;     //20s开始汇聚
-const LIDONG_HIDE_MS = 21500;    //21.5s 立冬快乐消失（比哈哈哈提前0.5s）
-const LAUGH_AT_MS   = 22000;     //22s弹出哈哈哈
-const LAUGH_KEEP_MS = 10000;     //哈哈哈持续10秒
+const MIN_ON_SCREEN  = 3;
+const STAY_MS       = 2000;
+const GATHER_DELAY  = 20000;
+const LIDONG_HIDE_MS = 21500;
+const LAUGH_AT_MS   = 22000;
+const LAUGH_KEEP_MS = 10000;
+const LOOP_BACK_MS  = 5000;
 
 const PHOTOS = [];
 for(let i = 1; i <= PHOTO_COUNT; i++) PHOTOS.push(i + '.jpg');
@@ -244,7 +258,6 @@ function makeHeart(px,py,size,delay){
   return s;
 }
 
-/*两圈爱心粒子*/
 const CX = W/2, CY = H*0.46;
 for(let ring=0; ring<2; ring++){
   const s = base*(1+ring*0.16);
@@ -255,7 +268,6 @@ for(let ring=0; ring<2; ring++){
   }
 }
 
-/*爱心光圈路径*/
 function heartPath(s){
   let p='';
   for(let t=0; t<=Math.PI*2+0.02; t+=0.04){
@@ -276,7 +288,6 @@ halo.innerHTML =
   + '<path class="halo-ccw"    d="'+heartPath(base*1.62)+'" />';
 stage.appendChild(halo);
 
-/*光圈流动小爱心*/
 const flowItems = [];
 function addFlow(s, n, dir, cool, period){
   for(let i=0;i<n;i++){
@@ -305,7 +316,6 @@ function flowTick(now){
 }
 requestAnimationFrame(flowTick);
 
-/*雪花+爱心一起生成上浮*/
 function spawnSnow(){
   const group = document.createElement('div');
   group.className = 'snow-group';
@@ -327,7 +337,7 @@ function spawnSnow(){
 
   const heart = document.createElement('span');
   heart.className = 'mini-heart';
-  heart.textContent = '\u2665';
+  heart.textContent = '\u2661';
   heart.style.fontSize = (size * 0.7).toFixed(1) + 'px';
   heart.style.left = (size * 0.6).toFixed(1) + 'px';
   heart.style.top  = (-size * 0.4).toFixed(1) + 'px';
@@ -337,31 +347,41 @@ function spawnSnow(){
   document.body.appendChild(group);
 
   setTimeout(() => group.remove(), 5200);
-  setTimeout(spawnSnow, 120 + Math.random()*360);
+  setTimeout(spawnSnow, 100 + Math.random()*300);
 }
 spawnSnow();
 
-/*照片轮播 20s内循环2次*/
 let gathering = false;
 function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
-let seq = shuffle([...Array(PHOTO_COUNT).keys()]).concat(shuffle([...Array(PHOTO_COUNT).keys()]));
-const TOTAL_SPAWNS = seq.length;
-const SPAWN_INTERVAL = Math.max(220, (GATHER_DELAY - 1500) / TOTAL_SPAWNS);
+let seq = [];
 const shown = [];
+const photoTimers = new Map();
+
+function nextPhotoIndex(){
+  if(seq.length === 0){
+    seq = shuffle([...Array(PHOTO_COUNT).keys()]);
+  }
+  return seq.shift();
+}
 
 function spawnPhoto(){
   if(gathering) return;
-  if(shown.length >= MAX_ON_SCREEN){
-    const old = shown.shift(); if(old && old.parentNode) old.remove();
-  }
-  if(seq.length === 0) return;
 
-  const idx = seq.shift();
+  if(shown.length >= MAX_ON_SCREEN){
+    const old = shown.shift();
+    if(old && old.parentNode) old.remove();
+  }
+
+  while(shown.length < MIN_ON_SCREEN){
+    forceSpawnPhoto();
+  }
+
+  const idx = nextPhotoIndex();
   const src = PHOTOS[idx];
   const card = document.createElement('div');
   card.className = 'photo-card';
 
-  const size = 90 + Math.random()*70;
+  const size = Math.round((110 + Math.random()*84) * 1.2);
   const rot  = (Math.random()-0.5)*28;
   const x = Math.random()*(window.innerWidth - size - 20) + 10;
   const y = Math.random()*(window.innerHeight - size - 60) + 20;
@@ -389,18 +409,67 @@ function spawnPhoto(){
     }, breathDelay);
   }
 
-  setTimeout(()=>{
+  if(Math.random() < 0.25){
+    setTimeout(()=>{
+      if(card.parentNode && !card.classList.contains('zoom') && !gathering){
+        card.classList.add('big');
+        setTimeout(()=>{
+          if(card.parentNode) card.classList.remove('big');
+        }, 4000);
+      }
+    }, 600 + Math.random()*800);
+  }
+
+  const t1 = setTimeout(()=>{
     if(card.parentNode && !card.classList.contains('zoom') && !gathering) card.remove();
   }, STAY_MS + 1400);
 
-  setTimeout(spawnPhoto, SPAWN_INTERVAL);
+  photoTimers.set(card, t1);
+  setTimeout(spawnPhoto, 320 + Math.random()*260);
 }
+
+function forceSpawnPhoto(){
+  if(gathering) return;
+
+  const idx = nextPhotoIndex();
+  const src = PHOTOS[idx];
+  const card = document.createElement('div');
+  card.className = 'photo-card';
+
+  const size = Math.round((110 + Math.random()*84) * 1.2);
+  const rot  = (Math.random()-0.5)*28;
+  const x = Math.random()*(window.innerWidth - size - 20) + 10;
+  const y = Math.random()*(window.innerHeight - size - 60) + 20;
+  const outDelay = (STAY_MS/1000).toFixed(2)+'s';
+
+  card.style.cssText += `width:${size}px;height:${size}px;left:${x}px;top:${y}px;`
+    + `--rot:${rot}deg;--in-delay:0s;--out-delay:${outDelay};`;
+
+  const img = document.createElement('img');
+  img.src = src; img.alt = '';
+  img.onerror = ()=>{ if(card.parentNode && !gathering) card.remove(); };
+  card.appendChild(img);
+
+  card.addEventListener('click', ()=>{ if(!gathering) card.classList.toggle('zoom'); });
+  photoLayer.appendChild(card);
+  shown.push(card);
+
+  const t1 = setTimeout(()=>{
+    if(card.parentNode && !card.classList.contains('zoom') && !gathering) card.remove();
+  }, STAY_MS + 1400);
+
+  photoTimers.set(card, t1);
+}
+
 spawnPhoto();
 
-/*20秒照片汇聚爱心*/
 function gatherToHeart(){
   gathering = true;
   footText.style.opacity = '0';
+
+  photoTimers.forEach((t)=> clearTimeout(t));
+  photoTimers.clear();
+
   photoLayer.querySelectorAll('.photo-card').forEach(c=>c.remove());
   shown.length = 0;
 
@@ -446,21 +515,74 @@ function gatherToHeart(){
       card.style.left = (tg.x - cardSize/2)+'px';
       card.style.top  = (tg.y - cardSize/2)+'px';
     });
-    setTimeout(()=>{ cards.forEach(c=>c.classList.add('final-pulse')); }, 1900);
+
+    setTimeout(()=>{
+      cards.forEach(c=>{
+        c.classList.add('fullscreen-heart');
+        c.classList.add('final-pulse');
+      });
+    }, 1900);
   });
 }
 setTimeout(gatherToHeart, GATHER_DELAY);
 
-// 21.5s：加上hide-me类，关闭发光动画，同时淡出文字
 setTimeout(()=>{
   lidongText.classList.add('hide-me');
 }, LIDONG_HIDE_MS);
 
-// 22s 弹出哈哈哈，持续10秒
 setTimeout(()=>{
   laughText.classList.add('show');
-  setTimeout(()=>{ if(laughText.parentNode) laughText.remove(); }, LAUGH_KEEP_MS);
+  setTimeout(()=>{
+    laughText.classList.remove('show');
+    laughText.style.animation = 'none';
+    void laughText.offsetWidth;
+    laughText.style.animation = '';
+    laughText.classList.remove('show');
+
+    photoLayer.querySelectorAll('.photo-card').forEach(c=>c.remove());
+    shown.length = 0;
+    gathering = false;
+
+    lidongText.classList.remove('hide-me');
+    footText.style.opacity = '1';
+
+    seq = shuffle([...Array(PHOTO_COUNT).keys()]);
+    spawnPhoto();
+    setTimeout(gatherToHeart, GATHER_DELAY - LOOP_BACK_MS);
+    setTimeout(()=>{
+      lidongText.classList.add('hide-me');
+    }, LIDONG_HIDE_MS - LOOP_BACK_MS);
+    setTimeout(loopLaugh, LAUGH_AT_MS - LOOP_BACK_MS);
+
+  }, LAUGH_KEEP_MS);
 }, LAUGH_AT_MS);
+
+function loopLaugh(){
+  laughText.classList.add('show');
+  setTimeout(()=>{
+    laughText.classList.remove('show');
+    laughText.style.animation = 'none';
+    void laughText.offsetWidth;
+    laughText.style.animation = '';
+    laughText.classList.remove('show');
+
+    photoLayer.querySelectorAll('.photo-card').forEach(c=>c.remove());
+    shown.length = 0;
+    gathering = false;
+
+    lidongText.classList.remove('hide-me');
+    footText.style.opacity = '1';
+
+    seq = shuffle([...Array(PHOTO_COUNT).keys()]);
+    spawnPhoto();
+    setTimeout(gatherToHeart, GATHER_DELAY - LOOP_BACK_MS);
+    setTimeout(()=>{
+      lidongText.classList.add('hide-me');
+    }, LIDONG_HIDE_MS - LOOP_BACK_MS);
+    setTimeout(loopLaugh, LAUGH_AT_MS - LOOP_BACK_MS);
+
+  }, LAUGH_KEEP_MS);
+}
 
 </script>
 </body>
