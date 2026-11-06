@@ -9,7 +9,6 @@
   html,body { width:100%; height:100%; background:#000; overflow:hidden; }
   body { display:flex; justify-content:center; align-items:center;
          font-family:"PingFang SC","Microsoft YaHei",sans-serif; }
-
   .photo-card {
     position:absolute; pointer-events:auto; cursor:pointer;
     background:#fff; padding:8px 8px 28px;
@@ -21,7 +20,7 @@
     transition: left 2.2s cubic-bezier(.4,0,.2,1),
                 top 2.2s cubic-bezier(.4,0,.2,1),
                 transform 2.2s cubic-bezier(.4,0,.2,1),
-                opacity 1.2s ease,
+                opacity 0.35s ease,
                 width 2.2s ease, height 2.2s ease;
   }
   .photo-card img {
@@ -43,7 +42,6 @@
     0%,100% { transform:scale(1) rotate(var(--rot)); }
     50%     { transform:scale(1.18) rotate(var(--rot)); }
   }
-
   .stage { position:relative; width:min(90vw,420px); height:min(90vw,420px);
            animation:beat 6.7s infinite ease-in-out; z-index:20; }
   @keyframes beat {
@@ -53,7 +51,6 @@
     36% { transform:scale(1.08); }
     50% { transform:scale(1); }
   }
-
   .p { position:absolute; color:#ff69b4; pointer-events:none;
        text-shadow:0 0 6px rgba(255,105,180,.9);
        animation:flow 1.5s infinite ease-in-out; }
@@ -62,29 +59,31 @@
     50%     { opacity:1;   transform:scale(1.25);
               text-shadow:0 0 14px rgba(255,120,200,1); }
   }
-
-  .text { position:absolute; top:46%; left:50%;
-          transform:translate(-50%,-50%);
-          color:#ff7fc0; font-weight:bold; white-space:nowrap;
-          font-size:clamp(20px,6vw,32px); z-index:20;
-          text-shadow:0 0 8px #ff69b4,0 0 24px rgba(255,105,180,.7);
-          animation:glow 1.4s infinite ease-in-out; }
-  @keyframes glow { 0%,100%{opacity:.9} 50%{opacity:1; text-shadow:0 0 16px #ff69b4,0 0 40px rgba(255,105,180,.9)} }
-
-  .bg { position:absolute; color:#fff; opacity:0; pointer-events:none;
-        animation:rise 3.6s linear forwards;
-        text-shadow:0 0 4px rgba(255,255,255,.8); }
-  @keyframes rise {
-    0% { transform:translateY(0) scale(.5) rotate(-15deg); opacity:0; }
-    18%{ opacity:.9; }
-    75%{ opacity:.6; }
-    100%{ transform:translateY(-130px) scale(1.3) rotate(15deg); opacity:0; }
+  #lidongText {
+    position:absolute;
+    top:46%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    color:#ff7fc0;
+    font-weight:bold;
+    white-space:nowrap;
+    font-size:clamp(20px,6vw,32px);
+    z-index:20;
+    text-shadow:0 0 8px #ff69b4,0 0 24px rgba(255,105,180,.7);
+    animation:glow 1.4s infinite ease-in-out;
+    transition:opacity 0.35s ease;
   }
-
+  #lidongText.hide-me{
+    animation:none !important;
+    opacity:0 !important;
+  }
+  @keyframes glow {
+    0%,100%{opacity:.9}
+    50%{opacity:1; text-shadow:0 0 16px #ff69b4,0 0 40px rgba(255,105,180,.9)}
+  }
   .foot { position:absolute; bottom:16px; width:100%; text-align:center;
           color:rgba(255,127,192,.55); font-size:12px; letter-spacing:3px; z-index:20;
           transition: opacity 1s; }
-
   .photo-card.zoom {
     position:fixed; top:50%; left:50%;
     transform:translate(-50%,-50%) rotate(0)!important;
@@ -94,7 +93,6 @@
     box-shadow:0 0 40px rgba(255,105,180,.6);
   }
   .photo-card.zoom img { width:100%; height:auto; }
-
   /* 汇聚时的照片样式 */
   .photo-card.gather {
     position:fixed !important;
@@ -107,7 +105,6 @@
                 width 1.0s ease, height 1.0s ease;
   }
   .photo-card.gather img { border-radius:50%; }
-
   /* 最终爱心整体脉动 */
   .photo-card.gather.final-pulse {
     animation: finalBeat 6.7s infinite ease-in-out !important;
@@ -119,28 +116,33 @@
     36% { transform: scale(1.04); }
     50% { transform: scale(1); }
   }
-
-  /* ===== 第10秒弹出的文字 ===== */
-  .laugh { position:absolute; left:50%; top:80%;
-           transform:translate(-50%,-50%) scale(0);
-           color:#ff69b4; font-weight:bold; white-space:nowrap;
-           font-size:clamp(30px,9vw,52px); letter-spacing:6px;
-           z-index:40; opacity:0; pointer-events:none;
-           text-shadow:0 0 10px #ff69b4,0 0 30px rgba(255,105,180,.85); }
-  .laugh.show { animation:laughPop 4s ease-out forwards; }
+  /* ===== 哈哈哈：页面正中间，最上层 ===== */
+  .laugh {
+    position:fixed;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%) scale(0);
+    color:#ff69b4;
+    font-weight:bold;
+    white-space:nowrap;
+    font-size:clamp(30px,9vw,52px);
+    letter-spacing:6px;
+    z-index:9999;
+    opacity:0;
+    pointer-events:none;
+    text-shadow:0 0 10px #ff69b4,0 0 30px rgba(255,105,180,.85);
+  }
+  .laugh.show { animation:laughPop 10s ease-out forwards; }
   @keyframes laughPop {
     0%   { opacity:0; transform:translate(-50%,-50%) scale(0) rotate(-8deg); }
-    10%  { opacity:1; transform:translate(-50%,-50%) scale(1.3) rotate(5deg); }
-    20%  { opacity:1; transform:translate(-50%,-50%) scale(0.95) rotate(-3deg); }
-    28%  { opacity:1; transform:translate(-50%,-50%) scale(1.12) rotate(2deg); }
-    36%  { opacity:1; transform:translate(-50%,-50%) scale(1) rotate(0deg); }
-    48%  { opacity:1; transform:translate(-50%,-50%) scale(1.08) rotate(0deg); }
-    60%  { opacity:1; transform:translate(-50%,-50%) scale(1) rotate(0deg); }
-    80%  { opacity:1; transform:translate(-50%,-50%) scale(1.05) rotate(0deg); }
+    5%  { opacity:1; transform:translate(-50%,-50%) scale(1.3) rotate(5deg); }
+    10%  { opacity:1; transform:translate(-50%,-50%) scale(0.95) rotate(-3deg); }
+    14%  { opacity:1; transform:translate(-50%,-50%) scale(1.12) rotate(2deg); }
+    18%  { opacity:1; transform:translate(-50%,-50%) scale(1) rotate(0deg); }
+    92%  { opacity:1; transform:translate(-50%,-50%) scale(1) rotate(0deg); }
     100% { opacity:0; transform:translate(-50%,-50%) scale(0.85) rotate(0deg); }
   }
-
-  /* ===== 主体爱心保持静止；周边两条光圈：一条顺、一条逆 ===== */
+  /* ===== 主体爱心光圈 ===== */
   .halo { position:absolute; left:0; top:0; width:100%; height:100%;
           overflow:visible; pointer-events:none; z-index:1; }
   .halo path { fill:none; stroke-linecap:round; }
@@ -156,8 +158,7 @@
           filter:drop-shadow(0 0 7px rgba(168,210,255,.9)); }
   @keyframes dashCW  { from{stroke-dashoffset:0} to{stroke-dashoffset:-62} }
   @keyframes dashCCW { from{stroke-dashoffset:0} to{stroke-dashoffset:74} }
-
-  /* 沿光圈滑行的小爱心（自身始终正立） */
+  /* 沿光圈滑行的小爱心 */
   .flowp { position:absolute; pointer-events:none; color:#ff8fc8; z-index:6;
            transform:translate(-50%,-50%);
            text-shadow:0 0 8px rgba(255,105,180,.95);
@@ -167,28 +168,59 @@
     0%,100% { opacity:.4;  transform:translate(-50%,-50%) scale(.8); }
     50%     { opacity:1;   transform:translate(-50%,-50%) scale(1.3); }
   }
+  /* 雪花+爱心一组上升 */
+  .snow-group {
+    position:absolute;
+    left:0;
+    top:0;
+    width:0;
+    height:0;
+    pointer-events:none;
+    animation:riseGroup 3.6s linear forwards;
+  }
+  .snow-group .snow {
+    position:absolute;
+    color:#fff;
+    font-size:inherit;
+    text-shadow:0 0 4px rgba(255,255,255,.8);
+    transform:translate(-50%,-50%);
+  }
+  .snow-group .mini-heart {
+    position:absolute;
+    color:#ff69b4;
+    font-size:inherit;
+    text-shadow:0 0 6px rgba(255,105,180,.9);
+    transform:translate(-50%,-50%);
+  }
+  @keyframes riseGroup {
+    0%   { transform:translateY(0) scale(.5) rotate(-15deg); opacity:0; }
+    18%  { opacity:1; }
+    75%  { opacity:.7; }
+    100% { transform:translateY(-130px) scale(1.3) rotate(15deg); opacity:0; }
+  }
 </style>
 </head>
 <body>
-
 <div id="photoLayer"></div>
-
 <div class="stage" id="stage">
-  <div class="text">立冬快乐 ❉</div>
+  <div id="lidongText">立冬快乐 ❉</div>
 </div>
 <div class="foot" id="footText">立 · 冬 · 快 · 乐</div>
-
 <div class="laugh" id="laughText">哈哈哈</div>
-
 <script>
 const stage = document.getElementById('stage');
 const photoLayer = document.getElementById('photoLayer');
 const footText = document.getElementById('footText');
+const lidongText = document.getElementById('lidongText');
+const laughText = document.getElementById('laughText');
 
 const PHOTO_COUNT   = 30;
 const MAX_ON_SCREEN = 12;
 const STAY_MS       = 2300;
-const GATHER_DELAY  = 20000;   // 第20秒开始汇聚
+const GATHER_DELAY  = 20000;     //20s开始汇聚
+const LIDONG_HIDE_MS = 21500;    //21.5s 立冬快乐消失（比哈哈哈提前0.5s）
+const LAUGH_AT_MS   = 22000;     //22s弹出哈哈哈
+const LAUGH_KEEP_MS = 10000;     //哈哈哈持续10秒
 
 const PHOTOS = [];
 for(let i = 1; i <= PHOTO_COUNT; i++) PHOTOS.push(i + '.jpg');
@@ -198,6 +230,7 @@ function heartXY(t, s){
   const y = -(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
   return [x*s, y*s];
 }
+
 const W = stage.clientWidth, H = stage.clientHeight;
 const base = Math.min(W,H)/60;
 
@@ -210,7 +243,8 @@ function makeHeart(px,py,size,delay){
   s.style.animationDelay = delay+'s';
   return s;
 }
-/* ===== 两圈爱心粒子：位置固定，不再整圈旋转 ===== */
+
+/*两圈爱心粒子*/
 const CX = W/2, CY = H*0.46;
 for(let ring=0; ring<2; ring++){
   const s = base*(1+ring*0.16);
@@ -221,7 +255,7 @@ for(let ring=0; ring<2; ring++){
   }
 }
 
-/* ===== 光圈：两条沿爱心轮廓的光带，一条顺时针、一条逆时针 ===== */
+/*爱心光圈路径*/
 function heartPath(s){
   let p='';
   for(let t=0; t<=Math.PI*2+0.02; t+=0.04){
@@ -230,18 +264,19 @@ function heartPath(s){
   }
   return p + 'Z';
 }
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const halo = document.createElementNS(SVG_NS,'svg');
 halo.setAttribute('class','halo');
 halo.setAttribute('viewBox','0 0 '+W+' '+H);
 halo.innerHTML =
-    '<path class="halo-static" d="'+heartPath(base*1.42)+'"/>'
-  + '<path class="halo-cw"     d="'+heartPath(base*1.42)+'"/>'
-  + '<path class="halo-static" d="'+heartPath(base*1.62)+'"/>'
-  + '<path class="halo-ccw"    d="'+heartPath(base*1.62)+'"/>';
+    '<path class="halo-static" d="'+heartPath(base*1.42)+'" />'
+  + '<path class="halo-cw"     d="'+heartPath(base*1.42)+'" />'
+  + '<path class="halo-static" d="'+heartPath(base*1.62)+'" />'
+  + '<path class="halo-ccw"    d="'+heartPath(base*1.62)+'" />';
 stage.appendChild(halo);
 
-/* ===== 顺着光圈流动的小爱心：顺、逆各一条 ===== */
+/*光圈流动小爱心*/
 const flowItems = [];
 function addFlow(s, n, dir, cool, period){
   for(let i=0;i<n;i++){
@@ -254,8 +289,8 @@ function addFlow(s, n, dir, cool, period){
     flowItems.push({el:el, s:s, t:(i/n)*Math.PI*2, dir:dir, period:period});
   }
 }
-addFlow(base*1.42, 15,  1, false, 18000);   // 内层光带：顺时针流动
-addFlow(base*1.62, 15, -1, true , 24000);   // 外层光带：逆时针流动
+addFlow(base*1.42, 15,  1, false, 18000);
+addFlow(base*1.62, 15, -1, true , 24000);
 
 let flowLast = performance.now();
 function flowTick(now){
@@ -270,28 +305,48 @@ function flowTick(now){
 }
 requestAnimationFrame(flowTick);
 
+/*雪花+爱心一起生成上浮*/
 function spawnSnow(){
-  const h = document.createElement('div');
-  h.className='bg';
-  h.textContent = Math.random()>0.5 ? '\u2744' : '\u2745';
-  h.style.left = Math.random()*window.innerWidth+'px';
-  h.style.top  = (window.innerHeight*(0.3+Math.random()*0.65))+'px';
-  h.style.fontSize = (10+Math.random()*22)+'px';
-  h.style.animationDuration = (2.4+Math.random()*2.4)+'s';
-  document.body.appendChild(h);
-  setTimeout(()=>h.remove(), 5200);
-  setTimeout(spawnSnow, 120+Math.random()*360);
+  const group = document.createElement('div');
+  group.className = 'snow-group';
+
+  const size = 10 + Math.random()*22;
+  const x = Math.random()*window.innerWidth;
+  const y = window.innerHeight*(0.3 + Math.random()*0.65);
+
+  group.style.left = x + 'px';
+  group.style.top  = y + 'px';
+  group.style.fontSize = size + 'px';
+  group.style.animationDuration = (2.4 + Math.random()*2.4) + 's';
+
+  const snow = document.createElement('span');
+  snow.className = 'snow';
+  snow.textContent = Math.random()>0.5 ? '\u2744' : '\u2745';
+  snow.style.left = '0px';
+  snow.style.top  = '0px';
+
+  const heart = document.createElement('span');
+  heart.className = 'mini-heart';
+  heart.textContent = '\u2665';
+  heart.style.fontSize = (size * 0.7).toFixed(1) + 'px';
+  heart.style.left = (size * 0.6).toFixed(1) + 'px';
+  heart.style.top  = (-size * 0.4).toFixed(1) + 'px';
+
+  group.appendChild(snow);
+  group.appendChild(heart);
+  document.body.appendChild(group);
+
+  setTimeout(() => group.remove(), 5200);
+  setTimeout(spawnSnow, 120 + Math.random()*360);
 }
 spawnSnow();
 
-/* ===== 照片轮播：保证每张在 20s 内至少完整出现 2 次 ===== */
+/*照片轮播 20s内循环2次*/
 let gathering = false;
 function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
-
 let seq = shuffle([...Array(PHOTO_COUNT).keys()]).concat(shuffle([...Array(PHOTO_COUNT).keys()]));
-const TOTAL_SPAWNS = seq.length;                 // 60
+const TOTAL_SPAWNS = seq.length;
 const SPAWN_INTERVAL = Math.max(220, (GATHER_DELAY - 1500) / TOTAL_SPAWNS);
-
 const shown = [];
 
 function spawnPhoto(){
@@ -300,16 +355,18 @@ function spawnPhoto(){
     const old = shown.shift(); if(old && old.parentNode) old.remove();
   }
   if(seq.length === 0) return;
+
   const idx = seq.shift();
   const src = PHOTOS[idx];
-
   const card = document.createElement('div');
   card.className = 'photo-card';
+
   const size = 90 + Math.random()*70;
   const rot  = (Math.random()-0.5)*28;
   const x = Math.random()*(window.innerWidth - size - 20) + 10;
   const y = Math.random()*(window.innerHeight - size - 60) + 20;
   const outDelay = (STAY_MS/1000).toFixed(2)+'s';
+
   card.style.cssText += `width:${size}px;height:${size}px;left:${x}px;top:${y}px;`
     + `--rot:${rot}deg;--in-delay:0s;--out-delay:${outDelay};`;
 
@@ -331,27 +388,28 @@ function spawnPhoto(){
       }
     }, breathDelay);
   }
-  setTimeout(()=>{ if(card.parentNode && !card.classList.contains('zoom') && !gathering) card.remove(); }, STAY_MS+1400);
+
+  setTimeout(()=>{
+    if(card.parentNode && !card.classList.contains('zoom') && !gathering) card.remove();
+  }, STAY_MS + 1400);
+
   setTimeout(spawnPhoto, SPAWN_INTERVAL);
 }
 spawnPhoto();
 
-/* ===== 第20秒：全部 30 张照片汇聚成一颗爱心 ===== */
+/*20秒照片汇聚爱心*/
 function gatherToHeart(){
   gathering = true;
   footText.style.opacity = '0';
-  const laugh = document.getElementById('laughText');
-  if(laugh) laugh.style.opacity = '0';
-
   photoLayer.querySelectorAll('.photo-card').forEach(c=>c.remove());
   shown.length = 0;
 
   const cx = window.innerWidth / 2;
   const cy = window.innerHeight * 0.44;
   const heartScale = Math.min(window.innerWidth, window.innerHeight) * 0.021;
-
   const targets = [];
   const outer = 18, inner = 12;
+
   for(let i=0;i<outer;i++){
     const t = (i/outer)*Math.PI*2 - Math.PI/2;
     const [hx,hy]=heartXY(t, heartScale);
@@ -364,7 +422,6 @@ function gatherToHeart(){
   }
 
   const cardSize = Math.max(30, Math.min(46, heartScale*2.2));
-
   const cards = [];
   for(let i=0;i<PHOTO_COUNT;i++){
     const card = document.createElement('div');
@@ -382,7 +439,6 @@ function gatherToHeart(){
     photoLayer.appendChild(card);
     cards.push(card);
   }
-
   void photoLayer.offsetHeight;
   requestAnimationFrame(()=>{
     cards.forEach((card,i)=>{
@@ -393,17 +449,19 @@ function gatherToHeart(){
     setTimeout(()=>{ cards.forEach(c=>c.classList.add('final-pulse')); }, 1900);
   });
 }
-
 setTimeout(gatherToHeart, GATHER_DELAY);
 
-/* ===== 第10秒出现「哈哈哈」 ===== */
-const laughText = document.getElementById('laughText');
-const LAUGH_AT_MS = 10000;
-const LAUGH_KEEP_MS = 4200;
+// 21.5s：加上hide-me类，关闭发光动画，同时淡出文字
+setTimeout(()=>{
+  lidongText.classList.add('hide-me');
+}, LIDONG_HIDE_MS);
+
+// 22s 弹出哈哈哈，持续10秒
 setTimeout(()=>{
   laughText.classList.add('show');
   setTimeout(()=>{ if(laughText.parentNode) laughText.remove(); }, LAUGH_KEEP_MS);
 }, LAUGH_AT_MS);
+
 </script>
 </body>
 </html>
