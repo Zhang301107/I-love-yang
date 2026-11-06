@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -53,6 +50,7 @@
   .p { position:absolute; color:#ff69b4; pointer-events:none;
        text-shadow:0 0 6px rgba(255,140,200,.55),0 0 14px rgba(255,105,180,.35);
        will-change:opacity,transform; }
+  body.m-lite .p { text-shadow:0 0 4px rgba(255,140,200,.45); }
 
   /* 内部填充粒子：保留原地呼吸缩放 */
   .p-fill { position:absolute; color:#ff69b4; pointer-events:none;
@@ -167,7 +165,7 @@ const GATHER_DELAY  = 20000;         // 第 20 秒汇聚
 /* ===== 爱心流动参数（只影响爱心这一部分）===== */
 const FLOW_PERIOD = 1.2;             // 光点绕爱心一圈的秒数（顺逆都加快：2.0 -> 1.2，每圈更快）
 const FLOW_TRAIL  = 0.13;            // 彗星拖尾长度（占整圈的比例）
-const FLOW_COMETS = 10;              // 每个方向的光线条数（顺 10 条 + 逆 10 条）
+const FLOW_COMETS = 5;               // 每个方向的光线条数（顺 5 条 + 逆 5 条，10 -> 5）
 const FLOW_STAGGER= 0.2;             // 同方向相邻两条光线的出发间隔（秒）（0.4 -> 0.2，出发更密、流水更连贯）
 /* ============================================ */
 
@@ -182,8 +180,8 @@ function heartXY(t, s){
 const W = stage.clientWidth || window.innerWidth, H = stage.clientHeight || window.innerHeight;
 const base = Math.min(W,H)/40;
 const isMobile = /Android|iPhone|iPad|iPod|Mobile|MicroMessenger|QQ\//i.test(navigator.userAgent) || Math.min(W,H) < 480;
-const RING_STEP = isMobile ? 0.09 : 0.05;                       // 移动端轮廓粒子间距加大，数量约减半
-const COMETS_N  = isMobile ? Math.min(6, FLOW_COMETS) : FLOW_COMETS;  // 移动端每方向光线减少
+const RING_STEP = isMobile ? 0.11 : 0.05;                       // 移动端轮廓粒子间距加大（0.09->0.11），粒子数再减一档，减轻每帧改写负担
+const COMETS_N  = FLOW_COMETS;                                   // 每方向光线统一为 5 条（顺逆各 5）
 
 const ringDots = [];   // 轮廓流光线粒子
 
@@ -207,9 +205,9 @@ function addFillDot(x,y,size,delay){
   stage.appendChild(s);
 }
 
-/* 轮廓三圈（内/中/外）：位置固定，参与流光扫掠 */
-for(let ring=0; ring<3; ring++){
-  const s = base*(1+ring*0.09);
+/* 轮廓两圈（内/外）：位置固定，参与流光扫掠（三圈 -> 两圈，去掉中间圈，内外两圈位置与原来一致） */
+for(let ring=0; ring<2; ring++){
+  const s = base*(1+ring*0.18);
   const step = RING_STEP;
   for(let t=0; t<Math.PI*2; t+=step){
     const [x,y]=heartXY(t,s);
@@ -227,7 +225,7 @@ for(let i=0;i<90;i++){
 /* 流光：顺 + 逆双向，每个方向各 FLOW_COMETS 条彗星高光（近白光头 + 粉色拖尾）
    同方向的多条光线之间间隔 FLOW_STAGGER 秒错峰出发 */
 const flowT0 = performance.now();
-const FLOW_FPS = 30;            // 移动端帧率节流：60fps 在手机上难维持，30fps 更稳更省电
+const FLOW_FPS = isMobile ? 18 : 30;   // 帧率节流：移动端 18fps 更稳更省电，桌面 30fps
 let flowLast = 0;
 function flowLoop(now){
   requestAnimationFrame(flowLoop);
@@ -260,6 +258,7 @@ function flowLoop(now){
     d.el.style.color = 'rgb(255,' + g + ',' + b + ')';
   }
 }
+if(isMobile){ try{ document.body.classList.add('m-lite'); }catch(e){} }
 requestAnimationFrame(flowLoop);
 
 function spawnSnow(){
