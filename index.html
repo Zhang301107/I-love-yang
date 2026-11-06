@@ -15,7 +15,7 @@
     background:#fff; padding:8px 8px 28px;
     box-shadow:0 6px 22px rgba(255,105,180,.25);
     border-radius:4px; opacity:0;
-    animation:photoIn .5s ease-out forwards, photoOut 1.6s ease-in forwards;
+    animation:photoIn .6s ease-out forwards, photoOut 1.8s ease-in forwards;
     animation-delay: var(--in-delay), var(--out-delay);
     z-index:1;
     transition: left 2.2s cubic-bezier(.4,0,.2,1),
@@ -24,13 +24,21 @@
                 opacity 1.2s ease,
                 width 2.2s ease, height 2.2s ease;
   }
-  .photo-card img { display:block; width:100%; height:100%; object-fit:cover; border-radius:2px; }
+  .photo-card img {
+    display:block; width:100%; height:100%; object-fit:cover;
+    border-radius:2px;
+  }
   @keyframes photoIn {
     0%   { opacity:0; transform:scale(.7) rotate(var(--rot)); }
     100% { opacity:1;  transform:scale(1)  rotate(var(--rot)); }
   }
-  @keyframes photoOut { 0%{opacity:1;} 100%{opacity:0; transform:scale(.85);} }
-  .photo-card.breath { animation:breathe .8s ease-in-out; }
+  @keyframes photoOut {
+    0%   { opacity:1; }
+    100% { opacity:0; transform:scale(.85); }
+  }
+  .photo-card.breath {
+    animation:breathe 1.1s ease-in-out;
+  }
   @keyframes breathe {
     0%,100% { transform:scale(1) rotate(var(--rot)); }
     50%     { transform:scale(1.18) rotate(var(--rot)); }
@@ -46,14 +54,7 @@
     50% { transform:scale(1); }
   }
 
-  /* 轮廓流光线粒子：位置固定，亮/暗由 JS 流光扫掠控制 */
   .p { position:absolute; color:#ff69b4; pointer-events:none;
-       text-shadow:0 0 6px rgba(255,140,200,.55),0 0 14px rgba(255,105,180,.35);
-       will-change:opacity,transform; }
-  body.m-lite .p { text-shadow:0 0 4px rgba(255,140,200,.45); }
-
-  /* 内部填充粒子：保留原地呼吸缩放 */
-  .p-fill { position:absolute; color:#ff69b4; pointer-events:none;
        text-shadow:0 0 6px rgba(255,105,180,.9);
        animation:flow 1.0s infinite ease-in-out; }
   @keyframes flow {
@@ -84,20 +85,6 @@
           color:rgba(255,127,192,.55); font-size:12px; letter-spacing:3px; z-index:20;
           transition: opacity 1s; }
 
-  /* 汇聚完成后出现的一句话：字体华文彩云 */
-  #finalText {
-    position:fixed; left:50%; top:46%;
-    transform:translate(-50%,-50%);
-    font-family:"华文彩云","STCaiyun","华文琥珀","STHupo",sans-serif;
-    color:#ff8fce; white-space:nowrap; text-align:center;
-    font-size:clamp(30px,9vw,58px); z-index:300;
-    text-shadow:0 0 10px #ff69b4,0 0 30px rgba(255,105,180,.85);
-    opacity:0; pointer-events:none; letter-spacing:2px;
-    transition:opacity 1.1s ease;
-  }
-  #finalText.show { opacity:1;
-    animation:glow 1.4s infinite ease-in-out; }
-
   .photo-card.zoom {
     position:fixed; top:50%; left:50%;
     transform:translate(-50%,-50%) rotate(0)!important;
@@ -108,14 +95,20 @@
   }
   .photo-card.zoom img { width:100%; height:auto; }
 
+  /* 汇聚时的照片样式 */
   .photo-card.gather {
-    position:fixed !important; z-index:100 !important;
+    position:fixed !important;
+    z-index:100 !important;
     padding:2px !important;
     box-shadow:0 0 12px rgba(255,105,180,.6) !important;
     cursor:default !important;
   }
   .photo-card.gather img { border-radius:50%; }
-  .photo-card.gather.final-pulse { animation: finalBeat 1.4s infinite ease-in-out; }
+
+  /* 最终爱心整体脉动 */
+  .photo-card.gather.final-pulse {
+    animation: finalBeat 1.4s infinite ease-in-out;
+  }
   @keyframes finalBeat {
     0%,100% { transform: translate(-50%,-50%) scale(1) rotate(0deg); }
     12% { transform: translate(-50%,-50%) scale(1.06) rotate(0deg); }
@@ -124,20 +117,25 @@
     50% { transform: translate(-50%,-50%) scale(1) rotate(0deg); }
   }
 
-  /* ===== 背景音乐按钮 ===== */
-  #musicTip {
-    position:fixed; top:18px; right:18px; z-index:1000;
-    padding:10px 18px; border-radius:24px;
-    background:rgba(255,105,180,.16); color:#ffc2de;
-    border:1px solid rgba(255,127,192,.6);
-    font-size:14px; letter-spacing:1px; cursor:pointer;
-    backdrop-filter:blur(4px);
-    box-shadow:0 0 16px rgba(255,105,180,.5);
-    display:none; align-items:center; gap:6px; white-space:nowrap;
-    animation:glow 1.4s infinite ease-in-out;
+  /* ===== 第10秒弹出的文字 ===== */
+  .laugh { position:absolute; left:50%; top:72%;
+           transform:translate(-50%,-50%) scale(0);
+           color:#ff69b4; font-weight:bold; white-space:nowrap;
+           font-size:clamp(30px,9vw,52px); letter-spacing:6px;
+           z-index:40; opacity:0; pointer-events:none;
+           text-shadow:0 0 10px #ff69b4,0 0 30px rgba(255,105,180,.85); }
+  .laugh.show { animation:laughPop 4s ease-out forwards; }
+  @keyframes laughPop {
+    0%   { opacity:0; transform:translate(-50%,-50%) scale(0) rotate(-8deg); }
+    10%  { opacity:1; transform:translate(-50%,-50%) scale(1.3) rotate(5deg); }
+    20%  { opacity:1; transform:translate(-50%,-50%) scale(0.95) rotate(-3deg); }
+    28%  { opacity:1; transform:translate(-50%,-50%) scale(1.12) rotate(2deg); }
+    36%  { opacity:1; transform:translate(-50%,-50%) scale(1) rotate(0deg); }
+    48%  { opacity:1; transform:translate(-50%,-50%) scale(1.08) rotate(0deg); }
+    60%  { opacity:1; transform:translate(-50%,-50%) scale(1) rotate(0deg); }
+    80%  { opacity:1; transform:translate(-50%,-50%) scale(1.05) rotate(0deg); }
+    100% { opacity:0; transform:translate(-50%,-50%) scale(0.85) rotate(0deg); }
   }
-
-  @supports not (backdrop-filter:blur(1px)) { #musicTip { background:rgba(40,10,25,.85); } }
 </style>
 </head>
 <body>
@@ -148,26 +146,19 @@
   <div class="text">立冬快乐 ❉</div>
 </div>
 <div class="foot" id="footText">立 · 冬 · 快 · 乐</div>
-<div id="finalText">吃饭了没</div>
-<div id="musicTip">&#9834; 点击播放背景音乐</div>
+
+<div class="laugh" id="laughText">哈哈哈</div>
 
 <script>
 const stage = document.getElementById('stage');
 const photoLayer = document.getElementById('photoLayer');
 const footText = document.getElementById('footText');
 
-const PHOTO_COUNT   = 30;        // 共 30 张照片：1.jpg ~ 30.jpg
-const MAX_ON_SCREEN = 16;
-const STAY_MS       = 900;           // 单张停留 0.9s（配合更高出图频率，让 30 张能在 20s 内多轮循环）
-const SPAWN_INTERVAL= 255;          // 出图间隔收小：20s 内约出图 ~70 次 > 30×2=60，保证每张至少循环 2 次
-const GATHER_DELAY  = 20000;         // 第 20 秒汇聚
-
-/* ===== 爱心流动参数（只影响爱心这一部分）===== */
-const FLOW_PERIOD = 1.2;             // 光点绕爱心一圈的秒数（顺逆都加快：2.0 -> 1.2，每圈更快）
-const FLOW_TRAIL  = 0.13;            // 彗星拖尾长度（占整圈的比例）
-const FLOW_COMETS = 5;               // 每个方向的光线条数（顺 5 条 + 逆 5 条，10 -> 5）
-const FLOW_STAGGER= 0.2;             // 同方向相邻两条光线的出发间隔（秒）（0.4 -> 0.2，出发更密、流水更连贯）
-/* ============================================ */
+const PHOTO_COUNT   = 5;
+const MAX_ON_SCREEN = 10;
+const STAY_MS       = 3200;
+const SPAWN_INTERVAL= 350;
+const GATHER_DELAY  = 28000; // 28秒后开始汇聚
 
 const PHOTOS = [];
 for(let i = 1; i <= PHOTO_COUNT; i++) PHOTOS.push(i + '.jpg');
@@ -177,27 +168,12 @@ function heartXY(t, s){
   const y = -(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
   return [x*s, y*s];
 }
-const W = stage.clientWidth || window.innerWidth, H = stage.clientHeight || window.innerHeight;
+const W = stage.clientWidth, H = stage.clientHeight;
 const base = Math.min(W,H)/40;
-const isMobile = /Android|iPhone|iPad|iPod|Mobile|MicroMessenger|QQ\//i.test(navigator.userAgent) || Math.min(W,H) < 480;
-const RING_STEP = isMobile ? 0.11 : 0.05;                       // 移动端轮廓粒子间距加大（0.09->0.11），粒子数再减一档，减轻每帧改写负担
-const COMETS_N  = FLOW_COMETS;                                   // 每方向光线统一为 5 条（顺逆各 5）
 
-const ringDots = [];   // 轮廓流光线粒子
-
-function addRingDot(x,y,size,arcPos){
+function addHeart(x,y,size,delay){
   const s = document.createElement('span');
   s.className='p'; s.textContent = Math.random()>0.85 ? '❉' : '❤';
-  s.style.left = (W/2 + x)+'px';
-  s.style.top  = (H*0.46 + y)+'px';
-  s.style.fontSize = size+'px';
-  s.style.opacity = '.35';
-  stage.appendChild(s);
-  ringDots.push({ el:s, arcPos });   // arcPos ∈ [0,1) 沿轮廓的归一化位置
-}
-function addFillDot(x,y,size,delay){
-  const s = document.createElement('span');
-  s.className='p-fill'; s.textContent = Math.random()>0.85 ? '❉' : '❤';
   s.style.left = (W/2 + x)+'px';
   s.style.top  = (H*0.46 + y)+'px';
   s.style.fontSize = size+'px';
@@ -205,61 +181,21 @@ function addFillDot(x,y,size,delay){
   stage.appendChild(s);
 }
 
-/* 轮廓两圈（内/外）：位置固定，参与流光扫掠（三圈 -> 两圈，去掉中间圈，内外两圈位置与原来一致） */
 for(let ring=0; ring<2; ring++){
   const s = base*(1+ring*0.18);
-  const step = RING_STEP;
+  const step = 0.06;
   for(let t=0; t<Math.PI*2; t+=step){
     const [x,y]=heartXY(t,s);
-    addRingDot(x,y, 10+Math.random()*8, (t/(Math.PI*2)));
+    const d = Math.sqrt(x*x+y*y)/ (base*18);
+    addHeart(x,y, 10+Math.random()*8, (d*1.2 + ring*0.3).toFixed(2));
   }
 }
-/* 内部随机填充：保留呼吸 */
 for(let i=0;i<90;i++){
   const t = Math.random()*Math.PI*2, k = Math.pow(Math.random(),0.55);
   const [x,y]=heartXY(t,base*k);
   const d = Math.sqrt(x*x+y*y)/(base*18);
-  addFillDot(x,y, 7+Math.random()*7, d*1.2);
+  addHeart(x,y, 7+Math.random()*7, d*1.2);
 }
-
-/* 流光：顺 + 逆双向，每个方向各 FLOW_COMETS 条彗星高光（近白光头 + 粉色拖尾）
-   同方向的多条光线之间间隔 FLOW_STAGGER 秒错峰出发 */
-const flowT0 = performance.now();
-const FLOW_FPS = isMobile ? 18 : 30;   // 帧率节流：移动端 18fps 更稳更省电，桌面 30fps
-let flowLast = 0;
-function flowLoop(now){
-  requestAnimationFrame(flowLoop);
-  if(now - flowLast < 1000/FLOW_FPS) return;   // 节流：跳过多于的帧
-  flowLast = now;
-  // 光头沿轮廓的连续相位（不归一，便于做错峰偏移）
-  const basePhase = ((now - flowT0)/1000) / FLOW_PERIOD;
-  const phaseGap  = FLOW_STAGGER / FLOW_PERIOD;   // 同方向相邻两条光线的相位差
-  for(const d of ringDots){
-    let I = 0;
-    for(let k=0; k<COMETS_N; k++){
-      const ph = basePhase - k*phaseGap;          // 第 k 条光线相对第一条错峰出发
-      let bCW = (ph - d.arcPos) % 1; if(bCW < 0) bCW += 1;   // 顺时针拖尾
-      if(bCW <= FLOW_TRAIL){
-        const i = Math.pow(1 - bCW/FLOW_TRAIL, 1.7);
-        if(i > I) I = i;
-      }
-      let bCCW = (d.arcPos - ph) % 1; if(bCCW < 0) bCCW += 1; // 逆时针拖尾
-      if(bCCW <= FLOW_TRAIL){
-        const i = Math.pow(1 - bCCW/FLOW_TRAIL, 1.7);
-        if(i > I) I = i;
-      }
-    }
-    const base = 0.34;                       // 未被扫过的轮廓：暗粉常亮
-    d.el.style.opacity = (base + (1-base)*I).toFixed(3);
-    d.el.style.transform = 'scale(' + (0.80 + 0.55*I).toFixed(3) + ')';
-    // 颜色：底色粉 -> 光头近白（只改 color；辉光固定由 CSS 给，不再每帧改 text-shadow）
-    const g = Math.round(105 + 150*I);
-    const b = Math.round(180 + 75*I);
-    d.el.style.color = 'rgb(255,' + g + ',' + b + ')';
-  }
-}
-if(isMobile){ try{ document.body.classList.add('m-lite'); }catch(e){} }
-requestAnimationFrame(flowLoop);
 
 function spawnSnow(){
   const h = document.createElement('div');
@@ -277,6 +213,7 @@ spawnSnow();
 
 let queue = [...Array(PHOTO_COUNT).keys()];
 let shown = [];
+let allPhotos = []; // 记录所有照片用于汇聚
 let gathering = false;
 
 function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
@@ -304,46 +241,32 @@ function spawnPhoto(){
     + `--rot:${rot}deg;--in-delay:${inDelay}s;--out-delay:${outDelay};`;
 
   const img = document.createElement('img');
-  img.src = src; img.alt = 'photo';
+  img.src = src;
+  img.alt = 'photo';
   img.onerror = ()=> card.remove();
   card.appendChild(img);
 
   card.addEventListener('click', ()=> card.classList.toggle('zoom'));
   photoLayer.appendChild(card);
   shown.push(card);
+  allPhotos.push(card);
 
   if(Math.random() < 0.3){
-    const breathDelay = 200 + Math.random()*Math.max(0, STAY_MS - 300);
+    const breathDelay = 600 + Math.random()*(STAY_MS - 1800);
     setTimeout(()=>{
       if(card.parentNode && !card.classList.contains('zoom') && !gathering){
         card.classList.add('breath');
-        setTimeout(()=> card.classList.remove('breath'), 900);
+        setTimeout(()=> card.classList.remove('breath'), 1200);
       }
     }, breathDelay);
   }
 
-  setTimeout(()=>{ if(card.parentNode && !card.classList.contains('zoom') && !gathering) card.remove(); }, STAY_MS+1700);
-  setTimeout(spawnPhoto, SPAWN_INTERVAL + Math.random()*35);
+  setTimeout(()=>{ if(card.parentNode && !card.classList.contains('zoom') && !gathering) card.remove(); }, STAY_MS+1900);
+  setTimeout(spawnPhoto, SPAWN_INTERVAL + Math.random()*200);
 }
 spawnPhoto();
 
-/* ===== 背景音乐 ===== */
-const BGM_FILE = "music.mp3";      // 把音乐文件命名为 music.mp3 放在本 html 同目录即可；也可改成你的文件名(支持 mp3 / m4a / ogg)
-const bgm = new Audio(BGM_FILE);
-bgm.loop = true;                    // 循环播放
-bgm.volume = 0.55;                  // 音量 0~1，可自行调大调小
-const musicTip = document.getElementById('musicTip');
-function startMusic(){
-  bgm.play().then(()=>{ if(musicTip) musicTip.style.display='none'; }).catch(()=>{});
-}
-// 页面加载即尝试自动播放；浏览器若拦截(多数浏览器会)，则显示右上角按钮，点一下即可播放
-bgm.play().then(()=>{ if(musicTip) musicTip.style.display='none'; })
-   .catch(()=>{ if(musicTip) musicTip.style.display='flex'; });
-if(musicTip){
-  musicTip.addEventListener('click', e=>{ e.stopPropagation(); startMusic(); musicTip.style.display='none'; });
-}
-
-/* ===== 汇聚成爱心（保持不变）===== */
+// ===== 汇聚成爱心 =====
 function gatherToHeart(){
   gathering = true;
   footText.style.opacity = '0';
@@ -352,9 +275,11 @@ function gatherToHeart(){
   const cy = window.innerHeight * 0.46;
   const heartScale = Math.min(window.innerWidth, window.innerHeight) / 42;
 
+  // 停止生成新照片
   const currentPhotos = [...photoLayer.querySelectorAll('.photo-card:not(.zoom)')];
-  if(currentPhotos.length === 0){
-    for(let i = 0; i < 14; i++){
+  if(currentPhotos.length === 0) {
+    // 如果屏幕上没有照片，临时生成一批
+    for(let i = 0; i < 12; i++){
       const card = document.createElement('div');
       card.className = 'photo-card';
       const size = 60 + Math.random()*40;
@@ -362,13 +287,14 @@ function gatherToHeart(){
       const y = Math.random()*(window.innerHeight - size);
       card.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px;opacity:1;`;
       const img = document.createElement('img');
-      img.src = PHOTOS[i % PHOTO_COUNT];
+      img.src = PHOTOS[i % PHOTO_COUNT] + '.jpg';
       card.appendChild(img);
       photoLayer.appendChild(card);
       currentPhotos.push(card);
     }
   }
 
+  // 计算爱心轨迹上的点位
   const totalPoints = currentPhotos.length;
   const positions = [];
   const step = (Math.PI * 2) / Math.max(totalPoints, 1);
@@ -377,11 +303,15 @@ function gatherToHeart(){
     const [hx, hy] = heartXY(t, heartScale * 0.55);
     positions.push({ x: cx + hx, y: cy + hy });
   }
+
+  // 打乱顺序让汇聚更自然
   const shuffled = [...positions].sort(()=> Math.random()-0.5);
 
   currentPhotos.forEach((card, i)=>{
     const target = shuffled[i % shuffled.length];
     const finalSize = Math.max(28, Math.min(55, 320 / Math.sqrt(totalPoints)));
+
+    // 移除原有动画，转为固定定位
     card.classList.remove('breath');
     card.classList.add('gather');
     card.style.animation = 'none';
@@ -394,13 +324,23 @@ function gatherToHeart(){
     card.style.zIndex = '100';
   });
 
-  setTimeout(()=>{ currentPhotos.forEach(card => card.classList.add('final-pulse')); }, 2400);
-
-  // 所有照片汇聚成形后，淡入这句话（华文彩云）
-  const finalText = document.getElementById('finalText');
-  if(finalText) setTimeout(()=> finalText.classList.add('show'), 2000);
+  // 汇聚完成后添加整体脉动
+  setTimeout(()=>{
+    currentPhotos.forEach(card => card.classList.add('final-pulse'));
+  }, 2400);
 }
+
+// 定时触发汇聚
 setTimeout(gatherToHeart, GATHER_DELAY);
+
+// ===== 第10秒出现「哈哈哈」 =====
+const laughText = document.getElementById('laughText');
+const LAUGH_AT_MS = 10000;      // 播放到第10秒时出现
+const LAUGH_KEEP_MS = 4200;     // 停留约4秒后淡出消失
+setTimeout(()=>{
+  laughText.classList.add('show');
+  setTimeout(()=>{ if(laughText.parentNode) laughText.remove(); }, LAUGH_KEEP_MS);
+}, LAUGH_AT_MS);
 </script>
 </body>
 </html>
