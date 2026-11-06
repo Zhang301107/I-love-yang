@@ -230,9 +230,8 @@ const lidongText = document.getElementById('lidongText');
 const laughText = document.getElementById('laughText');
 
 const PHOTO_COUNT   = 30;
-const MAX_ON_SCREEN = 12;
-const MIN_ON_SCREEN  = 3;
-const STAY_MS       = 3000;     // 20秒前单张照片停留3秒
+const STAY_MS       = 2000;
+const GAP_MS        = 1000;
 const GATHER_DELAY  = 20000;
 const LIDONG_HIDE_MS = 21500;
 const LAUGH_AT_MS   = 22000;
@@ -350,7 +349,7 @@ function spawnSnow(){
   document.body.appendChild(group);
 
   setTimeout(() => group.remove(), 5200);
-  setTimeout(spawnSnow, 100 + Math.random()*300);
+  setTimeout(spawnSnow, 60 + Math.random()*180);
 }
 spawnSnow();
 
@@ -369,15 +368,6 @@ function nextPhotoIndex(){
 
 function spawnPhoto(){
   if(gathering) return;
-
-  if(shown.length >= MAX_ON_SCREEN){
-    const old = shown.shift();
-    if(old && old.parentNode) old.remove();
-  }
-
-  while(shown.length < MIN_ON_SCREEN){
-    forceSpawnPhoto();
-  }
 
   const idx = nextPhotoIndex();
   const src = PHOTOS[idx];
@@ -428,40 +418,7 @@ function spawnPhoto(){
   }, STAY_MS + 1400);
 
   photoTimers.set(card, t1);
-  setTimeout(spawnPhoto, 320 + Math.random()*260);
-}
-
-function forceSpawnPhoto(){
-  if(gathering) return;
-
-  const idx = nextPhotoIndex();
-  const src = PHOTOS[idx];
-  const card = document.createElement('div');
-  card.className = 'photo-card';
-
-  const size = Math.round((110 + Math.random()*84) * 1.2);
-  const rot  = (Math.random()-0.5)*28;
-  const x = Math.random()*(window.innerWidth - size - 20) + 10;
-  const y = Math.random()*(window.innerHeight - size - 60) + 20;
-  const outDelay = (STAY_MS/1000).toFixed(2)+'s';
-
-  card.style.cssText += `width:${size}px;height:${size}px;left:${x}px;top:${y}px;`
-    + `--rot:${rot}deg;--in-delay:0s;--out-delay:${outDelay};`;
-
-  const img = document.createElement('img');
-  img.src = src; img.alt = '';
-  img.onerror = ()=>{ if(card.parentNode && !gathering) card.remove(); };
-  card.appendChild(img);
-
-  card.addEventListener('click', ()=>{ if(!gathering) card.classList.toggle('zoom'); });
-  photoLayer.appendChild(card);
-  shown.push(card);
-
-  const t1 = setTimeout(()=>{
-    if(card.parentNode && !card.classList.contains('zoom') && !gathering) card.remove();
-  }, STAY_MS + 1400);
-
-  photoTimers.set(card, t1);
+  setTimeout(spawnPhoto, GAP_MS);
 }
 
 spawnPhoto();
